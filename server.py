@@ -1,32 +1,58 @@
 from http.server import HTTPServer, BaseHTTPRequestHandler
 from io import BytesIO
 import uuid
+import cgi
 
-content = "gone fishin"
+entries_list = ["First Post", "Second Post"]
 
 class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
 
     def do_GET(self):
-        globals_list = globals()
-        self.send_response(200)
-        self.end_headers()
-        self.wfile.write(bytes(globals_list["content"], "utf-8"))
+        if self.path.endswith("/entries"):
+            self.send_response(200)
+            self.send_header("content-type", "text/html")
+            self.end_headers()
+
+            output = ""
+            output += "<html><body>"
+            output += "<h1>Entry List</h1>"
+            output += "<h3><a href='/entries/new'>Add New Entry</a></h3>"
+            for entry in entries_list:
+                output += entry
+                output += "</br>"
+            output += "</body></html>"
+            self.wfile.write(output.encode())
+
+        if self.path.endswith("/new"):
+            self.send_response(200)
+            self.send_header("content-type", "text/html")
+            self.end_headers()
+
+            output = ""
+            output += "<html><body>"
+            output += "<h1>Add New Entry</h1>"
+            output += "<form method='POST' enctype='multipart/form-data' action='/entries/new'>"
+            output += "<input name='entry' type='text' placeholder='Add new entry'>"
+            output += "<input type='submit' value='Add'>"
+            output += "</form>"
+            output += "</body></html>"
+            self.wfile.write(output.encode())
 
     def do_POST(self):
-        global content
-        content_length = int(self.headers['Content-Length'])
-        request = self.rfile.read(content_length)
-        id = bytes(str(uuid.uuid4()), "utf-8")
-        self.send_response(200)
-        self.end_headers()
-        response = BytesIO()
-        response.write(b'Your entry ID is: ')
-        response.write(id)
-        content = str(request)
-        self.wfile.write(response.getvalue())
+        if self.path.endswith("/new"):
+            ctype, pdict = cgi.parse_header(self.headers.get("content-type"))
+            pdict['boundary'] = bytes(pdict['boundary'], "utf-8")
+            content_len = int(self.headers.get('Content-length'))
+            pdict['CONTENT-LENGTH'] = content_len
+            if ctype == "multipart/form-data":
+                fields = cgi.parse_multipart(self.rfile, pdict)
+                new_entry = fields.get("entry")
+                entries_list.append(new_entry[0])
 
-
-
+                self.send_response(301)
+                self.send_header("content-type", "text/html")
+                self.send_header("Location", "/entries")
+                self.end_headers()
 
 httpd = HTTPServer(('localhost', 8000), SimpleHTTPRequestHandler)
 httpd.serve_forever()
