@@ -2,41 +2,54 @@ from http.server import HTTPServer, BaseHTTPRequestHandler
 from io import BytesIO
 import uuid
 import cgi
+import json
 
 entries_list = ["First Post", "Second Post"]
 
 class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
 
     def do_GET(self):
-        if self.path.endswith("/entries"):
-            self.send_response(200)
-            self.send_header("content-type", "text/html")
-            self.end_headers()
+        # API endpoints
+        if self.path.startswith("/api"):
 
-            output = ""
-            output += "<html><body>"
-            output += "<h1>Entry List</h1>"
-            output += "<h3><a href='/entries/new'>Add New Entry</a></h3>"
-            for entry in entries_list:
-                output += entry
-                output += "</br>"
-            output += "</body></html>"
-            self.wfile.write(output.encode())
+            if self.path.endswith("/entries"):
+                self.send_response(200)
+                self.send_header("content-type", "json")
+                self.end_headers()
 
-        if self.path.endswith("/new"):
-            self.send_response(200)
-            self.send_header("content-type", "text/html")
-            self.end_headers()
+                self.wfile.write(json.dumps(entries_list))
+        
+        # HTML router
+        else:
+            if self.path.endswith("/entries"):
+                self.send_response(200)
+                self.send_header("content-type", "text/html")
+                self.end_headers()
 
-            output = ""
-            output += "<html><body>"
-            output += "<h1>Add New Entry</h1>"
-            output += "<form method='POST' enctype='multipart/form-data' action='/entries/new'>"
-            output += "<input name='entry' type='text' placeholder='Add new entry'>"
-            output += "<input type='submit' value='Add'>"
-            output += "</form>"
-            output += "</body></html>"
-            self.wfile.write(output.encode())
+                output = ""
+                output += "<html><body>"
+                output += "<h1>Entry List</h1>"
+                output += "<h3><a href='/entries/new'>Add New Entry</a></h3>"
+                for entry in entries_list:
+                    output += entry
+                    output += "</br>"
+                output += "</body></html>"
+                self.wfile.write(output.encode())
+
+            if self.path.endswith("/new"):
+                self.send_response(200)
+                self.send_header("content-type", "text/html")
+                self.end_headers()
+
+                output = ""
+                output += "<html><body>"
+                output += "<h1>Add New Entry</h1>"
+                output += "<form method='POST' enctype='multipart/form-data' action='/entries/new'>"
+                output += "<input name='entry' type='text' placeholder='Add new entry'>"
+                output += "<input type='submit' value='Add'>"
+                output += "</form>"
+                output += "</body></html>"
+                self.wfile.write(output.encode())
 
     def do_POST(self):
         if self.path.endswith("/new"):
