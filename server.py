@@ -4,7 +4,7 @@ import uuid
 import cgi
 import json
 
-entries_list = ["First Post", "Second Post"]
+entries_dict = {"1": "First post", "2": "Second Post"}
 
 class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
 
@@ -12,14 +12,27 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
         # API endpoints
         if self.path.startswith("/api"):
 
-            if self.path.endswith("/entries"):
+            if self.path.endswith("/all_entries"):
                 self.send_response(200)
                 self.send_header("content-type", "json")
                 self.send_header("Access-Control-Allow-Origin", "*")
                 self.end_headers()
 
-                self.wfile.write(json.dumps(entries_list))
-        
+                response = json.dumps(entries_dict).encode()
+                self.wfile.write(response)
+
+            if self.path.endswith("/get_entry"):
+                self.send_response(200)
+                self.send_header("content-type", "json")
+                self.send_header("Access-Control-Allow-Origin", "*")
+                self.end_headers()
+
+                # Get passed ID json object and transform to Python object
+                # Use new Python object as key in 'entries_dict'
+                # self.wfile.write(json.dumps(entries_dict[Python ID object].encode()))
+
+                response = json.dumps(entries_dict).encode()
+                self.wfile.write(response)
         # HTML router
         else:
             if self.path.endswith("/entries"):
@@ -55,8 +68,8 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
     def do_POST(self):
         # API endpoints
         if self.path.startswith("/api"):
-
-            if self.path.endswith("/entries"):
+            # Endpoint for adding single entry
+            if self.path.endswith("/add_entry"):
                 self.send_response(200)
                 self.send_header("content-type", "json")
                 self.send_header("Access-Control-Allow-Origin", "*")
@@ -64,9 +77,12 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
 
                 content_length = int(self.headers['Content-Length'])
                 body = self.rfile.read(content_length)
-                newId = uuid.uuid1()
-                entries_list.append(body)
-                response = json.dumps({'id': str(newId)})
+                data = body.decode()
+                new_ID = str(uuid.uuid4())
+                entries_dict[new_ID] = data
+
+                # Returns ID for new post
+                response = json.dumps(new_ID).encode()
                 self.wfile.write(response)
 
         # HTML router
