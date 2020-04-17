@@ -85,6 +85,29 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
                 response = json.dumps(new_ID).encode()
                 self.wfile.write(response)
 
+            if ("/delete_entry") in self.path:
+                self.send_response(200)
+                self.send_header("content-type", "json")
+                self.send_header("Access-Control-Allow-Origin", "*")
+                self.end_headers()
+
+                id = str(self.path).split("/")[-1]
+                del(entries_dict[id])
+
+                response = json.dumps(None).encode()
+                self.wfile.write(response)
+
+            if self.path.endswith("/delete_all"):
+                self.send_response(200)
+                self.send_header("content-type", "json")
+                self.send_header("Access-Control-Allow-Origin", "*")
+                self.end_headers()
+
+                entries_dict.clear()
+
+                response = json.dumps(None).encode()
+                self.wfile.write(response)
+
         # HTML router
         else:
             if self.path.endswith("/new"):
