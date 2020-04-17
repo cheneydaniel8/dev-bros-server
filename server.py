@@ -15,6 +15,7 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
             if self.path.endswith("/entries"):
                 self.send_response(200)
                 self.send_header("content-type", "json")
+                self.send_header("Access-Control-Allow-Origin", "*")
                 self.end_headers()
 
                 self.wfile.write(json.dumps(entries_list))
@@ -52,20 +53,38 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
                 self.wfile.write(output.encode())
 
     def do_POST(self):
-        if self.path.endswith("/new"):
-            ctype, pdict = cgi.parse_header(self.headers.get("content-type"))
-            pdict['boundary'] = bytes(pdict['boundary'], "utf-8")
-            content_len = int(self.headers.get('Content-length'))
-            pdict['CONTENT-LENGTH'] = content_len
-            if ctype == "multipart/form-data":
-                fields = cgi.parse_multipart(self.rfile, pdict)
-                new_entry = fields.get("entry")
-                entries_list.append(new_entry[0])
+        # API endpoints
+        if self.path.startswith("/api"):
 
-                self.send_response(301)
-                self.send_header("content-type", "text/html")
-                self.send_header("Location", "/entries")
+            if self.path.endswith("/entries"):
+                self.send_response(200)
+                self.send_header("content-type", "json")
+                self.send_header("Access-Control-Allow-Origin", "*")
                 self.end_headers()
+
+                content_length = int(self.headers['Content-Length'])
+                body = self.rfile.read(content_length)
+                newId = uuid.uuid1()
+                entries_list.append(body)
+                response = json.dumps({'id': str(newId)})
+                self.wfile.write(response)
+
+        # HTML router
+        else:
+            if self.path.endswith("/new"):
+                ctype, pdict = cgi.parse_header(self.headers.get("content-type"))
+                pdict['boundary'] = bytes(pdict['boundary'], "utf-8")
+                content_len = int(self.headers.get('Content-length'))
+                pdict['CONTENT-LENGTH'] = content_len
+                if ctype == "multipart/form-data":
+                    fields = cgi.parse_multipart(self.rfile, pdict)
+                    new_entry = fields.get("entry")
+                    entries_list.append(new_entry[0])
+
+                    self.send_response(301)
+                    self.send_header("content-type", "text/html")
+                    self.send_header("Location", "/entries")
+                    self.end_headers()
 
 httpd = HTTPServer(('localhost', 8000), SimpleHTTPRequestHandler)
 httpd.serve_forever()
