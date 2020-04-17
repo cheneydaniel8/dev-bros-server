@@ -21,18 +21,18 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
                 response = json.dumps(entries_dict).encode()
                 self.wfile.write(response)
 
-            if self.path.endswith("/get_entry"):
+            if ("/get_entry") in self.path:
                 self.send_response(200)
                 self.send_header("content-type", "json")
                 self.send_header("Access-Control-Allow-Origin", "*")
                 self.end_headers()
+                # Gets path endpoint
+                id = str(self.path).split("/")[-1]
 
-                # Get passed ID json object and transform to Python object
-                # Use new Python object as key in 'entries_dict'
-                # self.wfile.write(json.dumps(entries_dict[Python ID object].encode()))
-
-                response = json.dumps(entries_dict).encode()
+                requested_post_data = entries_dict[id]
+                response = json.dumps(requested_post_data).encode()
                 self.wfile.write(response)
+
         # HTML router
         else:
             if self.path.endswith("/entries"):
