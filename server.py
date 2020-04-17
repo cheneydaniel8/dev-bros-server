@@ -12,7 +12,7 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
         # API endpoints
         if self.path.startswith("/api"):
 
-            if self.path.endswith("/all_entries"):
+            if self.path.endswith("/all-entries"):
                 self.send_response(200)
                 self.send_header("content-type", "json")
                 self.send_header("Access-Control-Allow-Origin", "*")
@@ -21,7 +21,7 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
                 response = json.dumps(entries_dict).encode()
                 self.wfile.write(response)
 
-            if ("/get_entry") in self.path:
+            if ("/entry") in self.path:
                 self.send_response(200)
                 self.send_header("content-type", "json")
                 self.send_header("Access-Control-Allow-Origin", "*")
@@ -69,7 +69,7 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
         # API endpoints
         if self.path.startswith("/api"):
             # Endpoint for adding single entry
-            if self.path.endswith("/add_entry"):
+            if self.path.endswith("/new-entry"):
                 self.send_response(200)
                 self.send_header("content-type", "json")
                 self.send_header("Access-Control-Allow-Origin", "*")
@@ -84,30 +84,6 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
                 # Returns ID for new post
                 response = json.dumps(new_ID).encode()
                 self.wfile.write(response)
-
-            if ("/delete_entry") in self.path:
-                self.send_response(200)
-                self.send_header("content-type", "json")
-                self.send_header("Access-Control-Allow-Origin", "*")
-                self.end_headers()
-
-                id = str(self.path).split("/")[-1]
-                del(entries_dict[id])
-
-                response = json.dumps(None).encode()
-                self.wfile.write(response)
-
-            if self.path.endswith("/delete_all"):
-                self.send_response(200)
-                self.send_header("content-type", "json")
-                self.send_header("Access-Control-Allow-Origin", "*")
-                self.end_headers()
-
-                entries_dict.clear()
-
-                response = json.dumps(None).encode()
-                self.wfile.write(response)
-
         # HTML router
         else:
             if self.path.endswith("/new"):
@@ -124,6 +100,32 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
                     self.send_header("content-type", "text/html")
                     self.send_header("Location", "/entries")
                     self.end_headers()
+
+    def do_DELETE(self):
+        # API endpoints
+        if self.path.startswith("/api"):
+            if ("/entry") in self.path:
+                self.send_response(200)
+                self.send_header("content-type", "json")
+                self.send_header("Access-Control-Allow-Origin", "*")
+                self.end_headers()
+
+                id = str(self.path).split("/")[-1]
+                del(entries_dict[id])
+
+                response = json.dumps(None).encode()
+                self.wfile.write(response)
+
+            if self.path.endswith("/all-entries"):
+                self.send_response(200)
+                self.send_header("content-type", "json")
+                self.send_header("Access-Control-Allow-Origin", "*")
+                self.end_headers()
+
+                entries_dict.clear()
+
+                response = json.dumps(None).encode()
+                self.wfile.write(response)
 
 httpd = HTTPServer(('localhost', 8000), SimpleHTTPRequestHandler)
 httpd.serve_forever()
