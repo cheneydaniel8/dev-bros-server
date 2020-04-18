@@ -3,8 +3,9 @@ from io import BytesIO
 import uuid
 import cgi
 import json
+import requests
 
-entries_dict = {"1": "First post", "2": "Second Post"}
+entries_dict = dict()
 
 class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
 
@@ -33,6 +34,20 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
                 response = json.dumps(requested_post_data).encode()
                 self.wfile.write(response)
 
+            if self.path.endswith("weather"):
+                self.send_response(200)
+                self.send_header("content-type", "json")
+                self.send_header("Access-Control-Allow-Origin", "*")
+                self.end_headers()
+
+                # url = ""
+                # # querystring = {}
+                # headers = {}
+                # response = requests.request("GET", url, headers=headers, params=querystring)
+                # print(response.text)
+
+                response = json.dumps(entries_dict).encode()
+                self.wfile.write(response)
         # HTML router
         else:
             if self.path.endswith("/entries"):
@@ -71,17 +86,17 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
             # Endpoint for adding single entry
             if self.path.endswith("/new-entry"):
                 self.send_response(200)
-                self.send_header("content-type", "json")
+                self.send_header("Content-Type", "json")
                 self.send_header("Access-Control-Allow-Origin", "*")
                 self.end_headers()
 
                 content_length = int(self.headers['Content-Length'])
                 body = self.rfile.read(content_length)
-                data = body.decode()
+                data = json.loads(body)
+
                 new_ID = str(uuid.uuid4())
                 entries_dict[new_ID] = data
 
-                # Returns ID for new post
                 response = json.dumps(new_ID).encode()
                 self.wfile.write(response)
         # HTML router
