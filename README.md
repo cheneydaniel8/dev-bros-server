@@ -11,3 +11,8 @@ POST
 3. Add to single entry to list (domain/api/add_entry)
 4. Delete single item from list (domain/api/delete_entry/{id})
 5. Delete all (domain/api/delete_all)
+
+
+Running Docker Container:
+`docker build -t dev-bros-server .`
+`docker run -p 8000:8000 dev-bros-server`
