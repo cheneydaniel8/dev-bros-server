@@ -3,7 +3,6 @@ from io import BytesIO
 import uuid
 import cgi
 import json
-import requests
 
 entries_dict = dict()
 
@@ -19,7 +18,7 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
                 self.send_header("Access-Control-Allow-Origin", "*")
                 self.end_headers()
 
-                response = json.dumps(entries_dict).encode()
+                response = json.dumps(entries_dict)
                 self.wfile.write(response)
 
             if ("/entry") in self.path:
@@ -39,12 +38,6 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
                 self.send_header("content-type", "json")
                 self.send_header("Access-Control-Allow-Origin", "*")
                 self.end_headers()
-
-                # url = ""
-                # # querystring = {}
-                # headers = {}
-                # response = requests.request("GET", url, headers=headers, params=querystring)
-                # print(response.text)
 
                 response = json.dumps().encode()
                 self.wfile.write(response)
