@@ -46,7 +46,7 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
                 # response = requests.request("GET", url, headers=headers, params=querystring)
                 # print(response.text)
 
-                response = json.dumps(entries_dict).encode()
+                response = json.dumps().encode()
                 self.wfile.write(response)
         # HTML router
         else:
