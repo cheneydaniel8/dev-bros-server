@@ -142,5 +142,5 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
                 response = json.dumps(None).encode()
                 self.wfile.write(response)
 
-httpd = HTTPServer(('localhost', 8000), SimpleHTTPRequestHandler)
+httpd = HTTPServer(('', 8000), SimpleHTTPRequestHandler)
 httpd.serve_forever()
