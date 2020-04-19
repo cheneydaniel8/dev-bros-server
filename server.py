@@ -4,6 +4,9 @@ import uuid
 import cgi
 import json
 import requests
+import mysql.connector
+from mysql.connector import Error
+from mysql.connector import errorcode
 
 entries_dict = dict()
 
@@ -19,7 +22,7 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
                 self.send_header("Access-Control-Allow-Origin", "*")
                 self.end_headers()
 
-                response = json.dumps(entries_dict).encode()
+                response = json.dumps(entries_dict)
                 self.wfile.write(response)
 
             if ("/entry") in self.path:
@@ -31,7 +34,7 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
                 id = str(self.path).split("/")[-1]
 
                 requested_post_data = entries_dict[id]
-                response = json.dumps(requested_post_data).encode()
+                response = json.dumps(requested_post_data)
                 self.wfile.write(response)
 
             if self.path.endswith("weather"):
@@ -46,7 +49,7 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
                 # response = requests.request("GET", url, headers=headers, params=querystring)
                 # print(response.text)
 
-                response = json.dumps().encode()
+                response = json.dumps()
                 self.wfile.write(response)
         # HTML router
         else:
@@ -95,7 +98,31 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
                 data = json.loads(body)
 
                 new_ID = str(uuid.uuid4())
-                entries_dict[new_ID] = data
+                date = data["date"]
+                location = data["location"]
+                narrative = data["narrative"]
+
+                try:
+                    connection = mysql.connector.connect(host='localhost',
+                                                         database='devbros',
+                                                         user='root',
+                                                         password='!Five56five')
+                    cursor = connection.cursor(prepared=True)
+                    sql_insert_query = """INSERT INTO posts (id, date, location, narrative) VALUES (%s, %s, %s, %s)"""
+                    data_input = (new_ID, date, location, narrative)
+                    cursor.execute(sql_insert_query, data_input)
+                    connection.commit()
+                    print(cursor.rowcount, "Record inserted successfully into table")
+                    cursor.close()
+
+                except mysql.connector.Error as error:
+                    print("Failed to insert record into table {}".format(error))
+
+                finally:
+                    if (connection.is_connected()):
+                        connection.close()
+                        print("MySQL connection is closed")
+
 
                 response = json.dumps(new_ID).encode()
                 self.wfile.write(response)
@@ -142,5 +169,5 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
                 response = json.dumps(None).encode()
                 self.wfile.write(response)
 
-httpd = HTTPServer(('', 8000), SimpleHTTPRequestHandler)
+httpd = HTTPServer(('', 8100), SimpleHTTPRequestHandler)
 httpd.serve_forever()
