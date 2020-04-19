@@ -8,6 +8,7 @@ import mysql.connector
 from mysql.connector import Error
 from mysql.connector import errorcode
 
+
 entries_dict = dict()
 
 class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
