@@ -8,6 +8,16 @@ entries_dict = dict()
 
 class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
 
+    def end_headers(self):
+        self.send_header('Access-Control-Allow-Origin', '*')
+        self.send_header('Access-Control-Allow-Methods', "POST, GET, OPTIONS, DELETE, PUT")
+        self.send_header("Access-Control-Allow-Headers", "x-api-key,Content-Type")
+        return super(SimpleHTTPRequestHandler, self).end_headers()
+
+    def do_OPTIONS(self):
+      self.send_response(200)
+      self.end_headers()
+
     def do_GET(self):
         # API endpoints
         if self.path.startswith("/api"):
@@ -15,16 +25,14 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
             if self.path.endswith("/all-entries"):
                 self.send_response(200)
                 self.send_header("content-type", "json")
-                self.send_header("Access-Control-Allow-Origin", "*")
                 self.end_headers()
 
-                response = json.dumps(entries_dict)
+                response = json.dumps(entries_dict).encode()
                 self.wfile.write(response)
 
             if ("/entry") in self.path:
                 self.send_response(200)
                 self.send_header("content-type", "json")
-                self.send_header("Access-Control-Allow-Origin", "*")
                 self.end_headers()
                 # Gets path endpoint
                 id = str(self.path).split("/")[-1]
@@ -36,7 +44,6 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
             if self.path.endswith("weather"):
                 self.send_response(200)
                 self.send_header("content-type", "json")
-                self.send_header("Access-Control-Allow-Origin", "*")
                 self.end_headers()
 
                 response = json.dumps().encode()
@@ -80,7 +87,6 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
             if self.path.endswith("/new-entry"):
                 self.send_response(200)
                 self.send_header("Content-Type", "json")
-                self.send_header("Access-Control-Allow-Origin", "*")
                 self.end_headers()
 
                 content_length = int(self.headers['Content-Length'])
@@ -115,7 +121,6 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
             if ("/entry") in self.path:
                 self.send_response(200)
                 self.send_header("content-type", "json")
-                self.send_header("Access-Control-Allow-Origin", "*")
                 self.end_headers()
 
                 id = str(self.path).split("/")[-1]
@@ -127,7 +132,6 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
             if self.path.endswith("/all-entries"):
                 self.send_response(200)
                 self.send_header("content-type", "json")
-                self.send_header("Access-Control-Allow-Origin", "*")
                 self.end_headers()
 
                 entries_dict.clear()
